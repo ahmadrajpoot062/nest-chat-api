@@ -26,6 +26,7 @@ describe('ChatController (e2e)', () => {
       });
 
     // Login to get JWT token
+    
     const loginRes = await request(app.getHttpServer())
       .post('/auth/login')
       .send({
