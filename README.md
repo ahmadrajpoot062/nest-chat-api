@@ -21,78 +21,187 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# NestJS Real-time Chat API
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A full-featured real-time chat application API built with NestJS, MongoDB, Socket.IO, and JWT authentication.
 
-## Project setup
+## 📋 Features
 
-```bash
-$ npm install
-```
+- **Real-time Messaging**: Socket.IO integration for instant message delivery
+- **User Authentication**: JWT-based secure authentication system
+- **Room-based Chats**: Support for multiple chat rooms
+- **REST API**: Well-structured endpoints for all operations
+- **API Documentation**: Swagger UI for easy API exploration
+- **Testing**: Comprehensive unit and E2E tests
 
-## Compile and run the project
+## 🛠️ Tech Stack
 
-```bash
-# development
-$ npm run start
+- **Framework**: [NestJS](https://nestjs.com/) v11
+- **Database**: [MongoDB](https://www.mongodb.com/) with Mongoose
+- **Authentication**: JWT with Passport.js
+- **WebSockets**: Socket.IO
+- **Validation**: class-validator & class-transformer
+- **API Docs**: Swagger/OpenAPI
+- **Testing**: Jest
+- **Security**: Helmet for HTTP headers
 
-# watch mode
-$ npm run start:dev
+## 🚀 Installation & Setup
 
-# production mode
-$ npm run start:prod
-```
+### Prerequisites
 
-## Run tests
+- Node.js (v16 or higher)
+- MongoDB (v5 or higher)
 
-```bash
-# unit tests
-$ npm run test
+### Getting Started
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+1. **Clone the repository**
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+git clone https://github.com/ahmadrajpoot062/nest-chat-api
+cd nest-chat-api
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+2. **Install dependencies**
 
-## Resources
+```bash
+npm install
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+3. **Configure environment**
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+MongoDB should be running on `localhost:27017`. The application uses a database named `nest-chat`.
 
-## Support
+4. **Start the server**
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# Development mode
+npm run start:dev
 
-## Stay in touch
+# Production mode
+npm run build
+npm run start:prod
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+5. **Access the API**
 
-## License
+The server runs on http://localhost:3000 by default.  
+API documentation is available at http://localhost:3000/api
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 🔒 Authentication
+
+The API uses JWT tokens for authentication. To access protected endpoints:
+
+1. Register a user via `/auth/register`
+2. Login via `/auth/login` to get an access token
+3. Use the token in the Authorization header: `Bearer <your_token>`
+
+## 🖥️ API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/register` | Register a new user |
+| POST | `/auth/login` | Log in a user and get JWT token |
+
+### Chat Messages
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/chat/send` | Send a new chat message |
+| GET | `/chat/:room` | Get messages from specific room |
+
+## 📱 WebSocket Events
+
+### Client to Server
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `join` | `{ room: string }` | Join a specific chat room |
+| `message` | `{ room: string, content: string }` | Send a message to the room |
+
+### Server to Client
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `message` | Message object | Receive a new message |
+
+### WebSocket Authentication
+
+Connect to the WebSocket server by providing your JWT token as a query parameter:
+
+```javascript
+const socket = io('http://localhost:3000', {
+  query: { token: 'your_jwt_token' }
+});
+```
+
+## 🧪 Testing
+
+The project includes comprehensive tests:
+
+```bash
+# Run unit tests
+npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:cov
+
+# Run end-to-end tests
+npm run test:e2e
+```
+
+## 🔧 Configuration
+
+The following environment variables can be configured:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | 3000 | Application port |
+| `MONGODB_URI` | mongodb://localhost:27017/nest-chat | MongoDB connection string |
+| `JWT_SECRET` | ThisIsMySuperSecretKey123!@# | Secret for JWT signing |
+| `JWT_EXPIRATION` | 1h | JWT token expiration |
+
+## 📐 Project Structure
+
+```
+src/
+├── auth/                   # Authentication module
+│   ├── dto/                # Data transfer objects
+│   ├── auth.controller.ts  # Authentication endpoints
+│   ├── auth.service.ts     # Authentication logic
+│   └── jwt.strategy.ts     # JWT authentication strategy
+├── chat/                   # Chat module
+│   ├── dto/                # Data transfer objects
+│   ├── gateway/            # WebSocket gateway
+│   ├── schemas/            # MongoDB schemas
+│   ├── chat.controller.ts  # Chat REST endpoints
+│   └── chat.service.ts     # Chat business logic
+├── users/                  # Users module
+│   ├── schemas/            # User schema
+│   └── users.service.ts    # User management
+├── app.module.ts           # Main application module
+└── main.ts                 # Application entry point
+```
+
+## 🚨 Important Notes
+
+- Default JWT key is `ThisIsMySuperSecretKey123!@#` - change this in production!
+- The same secret key should be configured in both `auth.module.ts` and `jwt.strategy.ts`
+- For production, consider moving configuration to environment variables
+- MongoDB should be properly secured in production environments
+
+## 🔍 Troubleshooting
+
+**Connection refused errors**: Make sure MongoDB is running on the default port.
+
+**WebSocket authentication errors**: Verify that you're providing a valid JWT token when connecting.
+
+**E2E test failures**: Ensure that MongoDB is running when executing tests.
+
+## 📄 License
+
+[MIT](LICENSE)
