@@ -19,6 +19,6 @@ import { AppService } from './app.service';       // ✅ And this
     UsersModule,
   ],
   controllers: [AppController], // ✅ Register AppController
-  providers: [AppService],      // ✅ Register AppService
+   providers: [AppService],      // ✅ Register AppService
 })
 export class AppModule {}
