@@ -21,12 +21,11 @@ export class ChatController {
 
   @Post('send')
   async sendMessage(
-    @Body() createMessageDto: CreateMessageDto,
+    @Body() dto: CreateMessageDto,
     @Request() req: any,
   ) {
-    const sender = req.user.username; // From JWT token
-    const { room, content } = createMessageDto;
-    return this.chatService.createMessage(sender, content, room);
+    const sender = req.user.username;
+    return this.chatService.createMessage(sender, dto.content, dto.room, dto?.file);
   }
 
   @Get(':room')
