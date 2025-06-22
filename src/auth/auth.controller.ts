@@ -1,29 +1,37 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
+// src/auth/auth.controller.ts
+import { Controller, Post, UploadedFile, UseInterceptors, Body, UnauthorizedException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { AuthService } from './auth.service';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
-@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    const user = await this.authService.register(registerDto.username, registerDto.password);
-    return { message: 'User registered successfully', user };
+  @UseInterceptors(FileInterceptor('avatar', {
+    storage: diskStorage({
+      destination: './uploads/avatars',
+      filename: (_, file, cb) => {
+        const name = `${Date.now()}${extname(file.originalname)}`;
+        cb(null, name);
+      },
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 },
+  }))
+  async register(@UploadedFile() file: Express.Multer.File, @Body() dto: RegisterDto) {
+    const avatar = file?.filename;
+    const user = await this.authService.register(dto.username, dto.password, avatar);
+    return { message: 'User registered', user };
   }
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    const user = await this.authService.validateUser(
-      loginDto.username,
-      loginDto.password,
-    );
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+  async login(@Body() dto: LoginDto) {
+    const user = await this.authService.validateUser(dto.username, dto.password);
+    if (!user) throw new UnauthorizedException('Invalid credentials');
     return this.authService.login(user);
   }
 }

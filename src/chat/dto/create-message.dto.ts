@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateMessageDto {
@@ -11,4 +11,9 @@ export class CreateMessageDto {
   @IsString()
   @IsNotEmpty()
   content: string;
+
+  @ApiProperty({ example: 'https://example.com/file.png', required: false })
+  @IsString()
+  @IsOptional()
+  file?: string; // For emoji image/file base64 or public URL
 }

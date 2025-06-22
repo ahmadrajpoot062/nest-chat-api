@@ -10,8 +10,9 @@ export class User {
 
   @Prop({ required: true })
   password: string;
+
+  @Prop()
+  avatar?: string; // Optional avatar URL or base64
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-
