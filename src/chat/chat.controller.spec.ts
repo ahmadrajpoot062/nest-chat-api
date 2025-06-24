@@ -13,6 +13,8 @@ describe('ChatController', () => {
       sender: 'john_doe',
       content: 'Hello there',
       room: 'room1',
+      file: 'file.jpg',
+      avatar: 'avatar.png',
       createdAt: new Date(),
     }),
     getRecentMessages: jest.fn().mockResolvedValue([
@@ -21,6 +23,7 @@ describe('ChatController', () => {
         sender: 'john_doe',
         content: 'Hi',
         room: 'room1',
+        avatar: 'avatar.png',
         createdAt: new Date(),
       },
     ]),
@@ -45,7 +48,38 @@ describe('ChatController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should send a message', async () => {
+  it('should send a message with file', async () => {
+    const dto: CreateMessageDto = {
+      room: 'room1',
+      content: 'Hello there',
+      file: 'file.jpg',
+    };
+
+    const req = {
+      user: {
+        username: 'john_doe',
+        avatar: 'avatar.png',
+      },
+    };
+
+    const result = await controller.sendMessage(dto, req);
+
+    expect(result).toHaveProperty('sender', 'john_doe');
+    expect(result).toHaveProperty('content', 'Hello there');
+    expect(result).toHaveProperty('room', 'room1');
+    expect(result).toHaveProperty('file', 'file.jpg');
+    expect(result).toHaveProperty('avatar', 'avatar.png');
+
+    expect(chatService.createMessage).toHaveBeenCalledWith(
+      'john_doe',
+      'Hello there',
+      'room1',
+      'file.jpg',
+      'avatar.png',
+    );
+  });
+
+  it('should send a message without file', async () => {
     const dto: CreateMessageDto = {
       room: 'room1',
       content: 'Hello there',
@@ -54,17 +88,24 @@ describe('ChatController', () => {
     const req = {
       user: {
         username: 'john_doe',
+        avatar: 'avatar.png',
       },
     };
 
-    const result = await controller.sendMessage(dto, req);
-    expect(result).toHaveProperty('sender', 'john_doe');
-    expect(result).toHaveProperty('content', 'Hello there');
-    expect(chatService.createMessage).toHaveBeenCalledWith('john_doe', 'Hello there', 'room1');
+    await controller.sendMessage(dto, req);
+
+    expect(chatService.createMessage).toHaveBeenCalledWith(
+      'john_doe',
+      'Hello there',
+      'room1',
+      undefined,
+      'avatar.png',
+    );
   });
 
   it('should return messages for a room', async () => {
     const result = await controller.getMessages('room1');
+
     expect(Array.isArray(result)).toBe(true);
     expect(chatService.getRecentMessages).toHaveBeenCalledWith('room1');
   });

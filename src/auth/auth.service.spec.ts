@@ -6,67 +6,181 @@ import * as bcrypt from 'bcrypt';
 
 describe('AuthService', () => {
   let service: AuthService;
+  let usersService: UsersService;
+  let jwtService: JwtService;
 
   const mockJwtService = {
-    sign: jest.fn().mockReturnValue('mocked-token'),
+    sign: jest.fn().mockReturnValue('test-token'),
   };
 
   const mockUsersService = {
     findByUsername: jest.fn(),
     create: jest.fn(),
-  };
-
-  const mockUser: any = {
-    _id: '123',
-    username: 'test',
-    password: '', // will be set in beforeEach
-    toObject: function () {
-      const { password, ...rest } = this;
-      return rest;
-    },
+    findById: jest.fn(),
   };
 
   beforeEach(async () => {
-    // Set hashed password
-    mockUser.password = await bcrypt.hash('pass123', 10);
-
-    mockUsersService.findByUsername.mockResolvedValue(mockUser);
-    mockUsersService.create.mockResolvedValue(mockUser);
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        { provide: JwtService, useValue: mockJwtService },
-        { provide: UsersService, useValue: mockUsersService },
+        {
+          provide: JwtService,
+          useValue: mockJwtService,
+        },
+        {
+          provide: UsersService,
+          useValue: mockUsersService,
+        },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
+    usersService = module.get<UsersService>(UsersService);
+    jwtService = module.get<JwtService>(JwtService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('should validate user with correct credentials', async () => {
-    const validatedUser = await service.validateUser('test', 'pass123');
-    expect(validatedUser).toBeDefined();
-    expect(validatedUser.username).toBe('test');
+  describe('register', () => {
+    it('should register a new user without avatar', async () => {
+      const mockUser = {
+        _id: 'user-id',
+        username: 'testuser',
+        password: 'hashedPassword',
+      };
+
+      mockUsersService.create.mockResolvedValue(mockUser);
+
+      const result = await service.register('testuser', 'password123');
+
+      expect(mockUsersService.create).toHaveBeenCalledWith(
+        'testuser',
+        expect.any(String),
+        undefined,
+      );
+
+      expect(result).toEqual(mockUser);
+    });
+
+    it('should register a new user with avatar', async () => {
+      const mockUser = {
+        _id: 'user-id',
+        username: 'testuser',
+        password: 'hashedPassword',
+        avatar: 'avatar.jpg',
+      };
+
+      mockUsersService.create.mockResolvedValue(mockUser);
+
+      const result = await service.register('testuser', 'password123', 'avatar.jpg');
+
+      expect(mockUsersService.create).toHaveBeenCalledWith(
+        'testuser',
+        expect.any(String),
+        'avatar.jpg',
+      );
+
+      expect(result).toEqual(mockUser);
+    });
   });
 
-  it('should return null with invalid password', async () => {
-    const result = await service.validateUser('test', 'wrongpass');
-    expect(result).toBeNull();
+  describe('validateUser', () => {
+    it('should return user object when credentials are valid', async () => {
+      const mockUser = {
+        _id: 'user-id',
+        username: 'testuser',
+        password: await bcrypt.hash('password123', 10),
+        avatar: 'avatar.jpg',
+        toObject: jest.fn().mockReturnValue({
+          _id: 'user-id',
+          username: 'testuser',
+          avatar: 'avatar.jpg',
+        }),
+      };
+
+      mockUsersService.findByUsername.mockResolvedValue(mockUser);
+
+      const result = await service.validateUser('testuser', 'password123');
+
+      expect(mockUsersService.findByUsername).toHaveBeenCalledWith('testuser');
+      expect(result).toEqual({
+        _id: 'user-id',
+        username: 'testuser',
+        avatar: 'avatar.jpg',
+      });
+    });
+
+    it('should return null when user is not found', async () => {
+      mockUsersService.findByUsername.mockResolvedValue(null);
+
+      const result = await service.validateUser('nonexistentuser', 'password123');
+
+      expect(mockUsersService.findByUsername).toHaveBeenCalledWith('nonexistentuser');
+      expect(result).toBeNull();
+    });
+
+    it('should return null when password is invalid', async () => {
+      const mockUser = {
+        _id: 'user-id',
+        username: 'testuser',
+        password: await bcrypt.hash('password123', 10),
+      };
+
+      mockUsersService.findByUsername.mockResolvedValue(mockUser);
+
+      const result = await service.validateUser('testuser', 'wrongpassword');
+
+      expect(mockUsersService.findByUsername).toHaveBeenCalledWith('testuser');
+      expect(result).toBeNull();
+    });
   });
 
-  it('should return a token on login', async () => {
-    const result = await service.login({ username: 'test', _id: '123' });
-    expect(result.access_token).toBe('mocked-token');
-  });
+  describe('login', () => {
+    it('should generate a token with user details including avatar', async () => {
+      const mockUser = {
+        _id: 'user-id',
+        username: 'testuser',
+        avatar: 'avatar.jpg',
+      };
 
-  it('should register a user', async () => {
-    const created = await service.register('test', 'pass123');
-    expect(created).toBeDefined();
-    expect(created.username).toBe('test');
+      const result = await service.login(mockUser);
+
+      expect(jwtService.sign).toHaveBeenCalledWith({
+        username: 'testuser',
+        sub: 'user-id',
+        avatar: 'avatar.jpg',
+      });
+
+      expect(result).toEqual({
+        access_token: 'test-token',
+        user: mockUser,
+      });
+    });
+
+    it('should handle user without avatar', async () => {
+      const mockUser = {
+        _id: 'user-id',
+        username: 'testuser',
+      };
+
+      const result = await service.login(mockUser);
+
+      expect(jwtService.sign).toHaveBeenCalledWith({
+        username: 'testuser',
+        sub: 'user-id',
+        avatar: undefined,
+      });
+
+      expect(result).toEqual({
+        access_token: 'test-token',
+        user: mockUser,
+      });
+    });
   });
 });

@@ -88,19 +88,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         content,
         room,
         file,
+        avatar, // ✅ Saving avatar
       );
 
       const payload = {
-        _id: String(savedMessage._id), // Or: (savedMessage._id as Types.ObjectId).toString()
+        _id: String(savedMessage._id),
         sender: savedMessage.sender,
         content: savedMessage.content,
         file: savedMessage.file || null,
         room: savedMessage.room,
         seen: false,
-        avatar: avatar || '',
+        avatar: savedMessage.avatar || '', // ✅ comes from DB
         createdAt: savedMessage.createdAt?.toISOString() || new Date().toISOString(),
       };
-
 
       this.server.to(room).emit('message', payload);
     } catch (err) {

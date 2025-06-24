@@ -15,8 +15,9 @@ export class ChatService {
     content: string,
     room: string,
     file?: string,
+    avatar?: string,
   ): Promise<ChatMessageDocument> {
-    const msg = new this.chatModel({ sender, content, room, file });
+    const msg = new this.chatModel({ sender, content, room, file, avatar });
     return msg.save(); // ✅ Returns full document
   }
 
@@ -24,7 +25,7 @@ export class ChatService {
     return this.chatModel
       .find({ room })
       .sort({ createdAt: 1 })
-      .limit(100)
+      .limit(100000)
       .exec();
   }
 }
