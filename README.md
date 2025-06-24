@@ -205,3 +205,55 @@ src/
 ## 📄 License
 
 [MIT](LICENSE)
+
+## 🔄 Connecting with the Frontend
+
+This backend is designed to work with the [nest-chat-ui](https://github.com/ahmadrajpoot062/nest-chat-ui) frontend project. 
+
+### Setting Up the Full Application
+
+1. **First, start this backend server** (runs on port 3000)
+   ```bash
+   # Navigate to the backend directory
+   cd nest-chat-api/server
+   
+   # Install dependencies if you haven't already
+   npm install
+   
+   # Create upload directories for avatars and files
+   mkdir -p uploads/avatars
+   
+   # Start the development server
+   npm run start:dev
+   ```
+
+2. **Then, clone and set up the frontend repository**
+   ```bash
+   # Clone the frontend repository
+   git clone https://github.com/ahmadrajpoot062/nest-chat-ui.git
+   
+   # Navigate to the frontend directory
+   cd nest-chat-ui
+   
+   # Install dependencies
+   npm install
+   
+   # Start the frontend development server
+   npm start
+   ```
+   
+3. **The frontend will prompt you to run on a different port** since port 3000 is already in use by the backend. Choose "Yes" to run it on port 3001.
+
+4. **Access the application** in your browser at [http://localhost:3001](http://localhost:3001)
+
+### For Beginners: Common Issues
+
+- **Backend must be running first**: Start the backend (this project) before starting the frontend.
+  
+- **MongoDB connection errors**: Ensure MongoDB is running before starting the backend.
+  
+- **File upload errors**: Make sure you've created the `uploads/avatars` and `uploads/files` directories.
+  
+- **CORS errors**: The backend is configured to accept requests from `http://localhost:3001` by default.
+
+- **Avatar not showing**: Check that the path to the avatar directory is correct and that the files have proper permissions.

@@ -25,7 +25,8 @@ export class ChatController {
     @Request() req: any,
   ) {
     const sender = req.user.username;
-    return this.chatService.createMessage(sender, dto.content, dto.room, dto?.file);
+    const avatar = req.user.avatar; // ✅ get from JWT payload
+    return this.chatService.createMessage(sender, dto.content, dto.room, dto?.file, avatar);
   }
 
   @Get(':room')
